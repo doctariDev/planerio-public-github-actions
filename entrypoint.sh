@@ -58,10 +58,13 @@ cat <<EOF
 EOF
 ) > /tmp/dpl_trigger_request.json
 
+echo $(cat /tmp/dpl_trigger_request.json)
+
 echo "start invoke lambda"
+
 aws lambda invoke \
     --function-name 'planerio-microservice-deployment-triggerDeployment' \
-    --payload 'file:///tmp/dpl_trigger_request.json' \
+    raw-in-base64-out --payload 'file:///tmp/dpl_trigger_request.json' \
     /tmp/dpl_trigger_response.json > /tmp/dpl_invokation_result.json
 rc=$?
 if [[ $rc -ne 0 ]] || [ ! -s /tmp/dpl_invokation_result.json ]; then
