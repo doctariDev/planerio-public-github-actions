@@ -96,7 +96,7 @@ EOF
 
     aws lambda invoke \
         --function-name 'planerio-microservice-deployment-pollDeploymentStatus' \
-        --payload 'file:///tmp/dpl_poll_request.json' \
+        --cli-binary-format raw-in-base64-out --payload 'file:///tmp/dpl_poll_request.json' \
         /tmp/dpl_poll_status.json >/dev/null
     status=`cat /tmp/dpl_poll_status.json | jq -r '.status'`
     progressid=`cat /tmp/dpl_poll_status.json | jq -r '.maxProgressId'`
