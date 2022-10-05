@@ -1,0 +1,34 @@
+# action.yaml
+name: 'Trigger Deployment in Planerios AWS ECS'
+description: 'use multiple bash scripts to trigger a deployment and run updates'
+inputs:
+  PLANERIO_SERVICE_NAME:
+    description: 'name of the Planerio service you want to deploy'
+    required: true
+  PLANERIO_STATIC_ENVIRONMENT_NAME:
+    description: 'planerio environmnt you want to deploy to e.g.: dev, stage'
+    required: true
+  BUILDNUMBER:
+    description: 'number of build'
+    required: true
+  BRANCHNAME:
+    description: 'name of branch'
+    required: true
+  COMMITHASH:
+    description: 'commithash'
+    required: true
+  DOCKERIMAGEHASH:
+    description: 'docker image id'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - run: ${{ github.action_path }}/entrypoint.sh
+      shell: bash
+      env:
+        PLANERIO_SERVICE_NAME: ${{ inputs.PLANERIO_SERVICE_NAME }}
+        PLANERIO_STATIC_ENVIRONMENT_NAME: ${{ inputs.PLANERIO_STATIC_ENVIRONMENT_NAME}}
+        BUILDNUMBER: ${{ inputs.BUILDNUMBER }}
+        BRANCHNAME: ${{ inputs.BRANCHNAME }}
+        COMMITHASH: ${{ inputs.COMMITHASH }}
+        DOCKERIMAGEHASH: ${{ inputs.DOCKERIMAGEHASH }}
