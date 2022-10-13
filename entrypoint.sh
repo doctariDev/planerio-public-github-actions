@@ -24,16 +24,6 @@ if [ -z "${BRANCHNAME}" ]; then
     exit 1
 fi
 
-if [ -z "${COMMITHASH}" ]; then
-    echo "Missing COMMITHASH"
-    exit 1
-fi
-
-if [ -z "${DOCKERIMAGEHASH}" ]; then
-    echo "Missing DOCKERIMAGEHASH"
-    exit 1
-fi
-
 
 
 
@@ -42,22 +32,42 @@ UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
 echo "variables are cleared and set"
 
-(
+
+if [ -z "${COMMITHASH}" ]&&[ -z "${DOCKERIMAGEHASH}"] ; then
+    (
 cat <<EOF
 {
     "serviceName": "${PLANERIO_SERVICE_NAME}",
     "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
-
     "buildNumber": ${BUILDNUMBER},
     "branchName": "${BRANCHNAME}",
     "commitHash": "${COMMITHASH}",
     "dockerImageHash": "${DOCKERIMAGEHASH}",
-
     "uniqueId": "${UNIQUEID}"
 }
 EOF
-) > /tmp/dpl_trigger_request.json
+    ) > /tmp/dpl_trigger_request.json
+fi
 
+if [ -z "${S3OBJECTVERSION}" ]; then
+    (
+cat <<EOF
+{
+    "serviceName": "${PLANERIO_SERVICE_NAME}",
+    "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
+    "buildNumber": ${BUILDNUMBER},
+    "branchName": "${BRANCHNAME}",
+    "s3ObjectVersion": "${S3OBJECTVERSION}",
+    "uniqueId": "${UNIQUEID}"
+}
+EOF
+    ) > /tmp/dpl_trigger_request.json
+fi
+
+if [ ! -f /tmp/dpl_trigger_request.json ]
+    echo "dpl_trigger_request.json does not exist"
+    return 1;
+fi
 echo $(cat /tmp/dpl_trigger_request.json)
 
 echo "start invoke lambda"

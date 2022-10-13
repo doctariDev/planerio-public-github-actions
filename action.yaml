@@ -16,10 +16,13 @@ inputs:
     required: true
   COMMITHASH:
     description: 'commithash'
-    required: true
+    required: false
   DOCKERIMAGEHASH:
     description: 'docker image id'
-    required: true
+    required: false
+  S3OBJECTVERSION:
+    description: 's3 object version'
+    required: false
 runs:
   using: 'composite'
   steps:
