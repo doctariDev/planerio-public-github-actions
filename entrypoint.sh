@@ -67,7 +67,7 @@ fi
 
 if [ ! -f /tmp/dpl_trigger_request.json ]; then
     echo "dpl_trigger_request.json does not exist"
-    return 1;
+    exit 1;
 fi
 echo $(cat /tmp/dpl_trigger_request.json)
 
