@@ -35,3 +35,4 @@ runs:
         BRANCHNAME: ${{ inputs.BRANCHNAME }}
         COMMITHASH: ${{ inputs.COMMITHASH }}
         DOCKERIMAGEHASH: ${{ inputs.DOCKERIMAGEHASH }}
+        S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
