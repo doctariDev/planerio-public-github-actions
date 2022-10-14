@@ -33,7 +33,7 @@ UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 echo "variables are cleared and set"
 
 
-if [ -z "${COMMITHASH}" ]&&[ -z "${DOCKERIMAGEHASH}"] ; then
+if [ -z "${COMMITHASH}" ] && [ -z "${DOCKERIMAGEHASH}"] ; then
     (
 cat <<EOF
 {
@@ -49,7 +49,7 @@ EOF
     ) > /tmp/dpl_trigger_request.json
 fi
 
-if [ -z "${S3OBJECTVERSION}" ]; then
+if [ -z "${COMMITHASH}" ] && [ -z "${S3OBJECTVERSION}" ]; then
     (
 cat <<EOF
 {
@@ -57,6 +57,7 @@ cat <<EOF
     "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
     "buildNumber": ${BUILDNUMBER},
     "branchName": "${BRANCHNAME}",
+    "commitHash": "${COMMITHASH}",
     "s3ObjectVersion": "${S3OBJECTVERSION}",
     "uniqueId": "${UNIQUEID}"
 }
