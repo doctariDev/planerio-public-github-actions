@@ -64,7 +64,7 @@ EOF
     ) > /tmp/dpl_trigger_request.json
 fi
 
-if [ ! -f /tmp/dpl_trigger_request.json ]
+if [ ! -f /tmp/dpl_trigger_request.json ]; then
     echo "dpl_trigger_request.json does not exist"
     return 1;
 fi
