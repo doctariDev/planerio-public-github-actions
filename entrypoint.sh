@@ -24,7 +24,20 @@ if [ -z "${BRANCHNAME}" ]; then
     exit 1
 fi
 
+if [ -z "${COMMITHASH}" ]; then
+    echo "Missing COMMITHASH"
+    exit 1
+fi
 
+if [ -z "${DOCKERIMAGEHASH}" ] && [ -z "${S3OBJECTVERSION}"] ; then
+    echo "Missing both DOCKERIMAGEHASH and S3OBJECTVERSION. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified"
+    exit 1
+fi
+
+if [ ! -z "${DOCKERIMAGEHASH}" ] && [ ! -z "${S3OBJECTVERSION}"] ; then
+    echo "Both DOCKERIMAGEHASH and S3OBJECTVERSION are specified. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified, but not both. "
+    exit 1
+fi
 
 
 UNIQUEID=`cat /proc/sys/kernel/random/uuid`
@@ -33,7 +46,7 @@ UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 echo "variables are cleared and set"
 
 
-if [ ! -z "${COMMITHASH}" ] && [ ! -z "${DOCKERIMAGEHASH}"] ; then
+if [ ! -z "${DOCKERIMAGEHASH}"] ; then
     (
 cat <<EOF
 {
@@ -49,7 +62,7 @@ EOF
     ) > /tmp/dpl_trigger_request.json
 fi
 
-if [ ! -z "${COMMITHASH}" ] && [ ! -z "${S3OBJECTVERSION}" ]; then
+if [ ! -z "${S3OBJECTVERSION}" ]; then
     (
 cat <<EOF
 {
