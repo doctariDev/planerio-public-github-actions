@@ -39,5 +39,5 @@ runs:
         COMMITHASH: ${{ inputs.COMMITHASH }}
         DOCKERIMAGEHASH: ${{ inputs.DOCKERIMAGEHASH }}
         S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
-        KAFKA_TOPICS_JSON: ${{ inpputs.KAFKA_TOPICS_JSON }}
+        KAFKA_TOPICS_JSON: ${{ inputs.KAFKA_TOPICS_JSON }}
 
