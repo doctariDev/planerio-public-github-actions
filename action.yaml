@@ -23,6 +23,9 @@ inputs:
   S3OBJECTVERSION:
     description: 's3 object version'
     required: false
+  KAFKA_TOPICS_JSON:
+    description: 'kafkaTopics to update'
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -36,3 +39,5 @@ runs:
         COMMITHASH: ${{ inputs.COMMITHASH }}
         DOCKERIMAGEHASH: ${{ inputs.DOCKERIMAGEHASH }}
         S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
+        KAFKA_TOPICS_JSON: ${{ inpputs.KAFKA_TOPICS_JSON }}
+
