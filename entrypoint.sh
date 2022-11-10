@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-
-echo "you are running a custom planerio Github Action"
+echo "You are running a Planerio Github Action!"
 
 if [[ "${PLANERIO_SERVICE_NAME}" =~ skeleton ]]; then
     echo "Detected skeleton project - exiting gracefully"
@@ -29,22 +28,22 @@ if [ -z "${COMMITHASH}" ]; then
     exit 1
 fi
 
-if [ -z "${DOCKERIMAGEHASH}" ] && [ -z "${S3OBJECTVERSION}"] ; then
+if [ -z "${DOCKERIMAGEHASH}" ] && [ -z "${S3OBJECTVERSION}"]; then
     echo "Missing both DOCKERIMAGEHASH and S3OBJECTVERSION. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified"
     exit 1
 fi
 
-if [ ! -z "${DOCKERIMAGEHASH}" ] && [ ! -z "${S3OBJECTVERSION}"] ; then
+if [ ! -z "${DOCKERIMAGEHASH}" ] && [ ! -z "${S3OBJECTVERSION}"]; then
     echo "Both DOCKERIMAGEHASH and S3OBJECTVERSION are specified. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified, but not both. "
     exit 1
 fi
 
-
 UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
-
-echo "variables are cleared and set"
-
+KAFKA_TOPICS_JSON='[]'
+if [ -f planerio-kafka-consumer.json ]; then
+    KAFKA_TOPICS_JSON=$(jq -r .topicsV1 < planerio-kafka-consumer.json)
+fi
 
 if [ ! -z "${DOCKERIMAGEHASH}"] ; then
     (
@@ -60,71 +59,66 @@ cat <<EOF
 }
 EOF
     ) > /tmp/dpl_trigger_request.json
-fi
 
-if [ ! -z "${S3OBJECTVERSION}" ] && [ -z "${KAFKA_TOPICS_JSON}" ]; then
-    (
+elif [ ! -z "${S3OBJECTVERSION}" ] then
+(
 cat <<EOF
 {
     "serviceName": "${PLANERIO_SERVICE_NAME}",
     "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
-    "buildNumber": ${BUILDNUMBER},
-    "branchName": "${BRANCHNAME}",
-    "commitHash": "${COMMITHASH}",
-    "s3ObjectVersion": "${S3OBJECTVERSION}",
-    "uniqueId": "${UNIQUEID}"
-}
-EOF
-    ) > /tmp/dpl_trigger_request.json
-fi
 
-if [ ! -z "${S3OBJECTVERSION}"] && [ ! -z "${KAFKA_TOPICS_JSON}" ]; then
-    (
-cat <<EOF
-{
-    "serviceName": "${PLANERIO_SERVICE_NAME}",
-    "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
     "buildNumber": ${BUILDNUMBER},
     "branchName": "${BRANCHNAME}",
     "commitHash": "${COMMITHASH}",
     "s3ObjectVersion": "${S3OBJECTVERSION}",
     "kafkaTopics": ${KAFKA_TOPICS_JSON},
+
     "uniqueId": "${UNIQUEID}"
 }
 EOF
-    ) > /tmp/dpl_trigger_request.json
+) > /tmp/dpl_trigger_request.json
 fi
 
 if [ ! -f /tmp/dpl_trigger_request.json ]; then
     echo "dpl_trigger_request.json does not exist"
     exit 1;
 fi
-echo $(cat /tmp/dpl_trigger_request.json)
 
-echo "start invoke lambda"
+echo "Invoking Lambda with payload:"
+echo $(cat /tmp/dpl_trigger_request.json)
 
 aws lambda invoke \
     --function-name 'planerio-microservice-deployment-triggerDeployment' \
-    --cli-binary-format raw-in-base64-out --payload file:///tmp/dpl_trigger_request.json \
+    --payload 'file:///tmp/dpl_trigger_request.json' \
+    --cli-binary-format raw-in-base64-out \
     /tmp/dpl_trigger_response.json > /tmp/dpl_invokation_result.json
+
 rc=$?
+
 if [[ $rc -ne 0 ]] || [ ! -s /tmp/dpl_invokation_result.json ]; then
     exit $rc
 fi
+
 functionerror=`cat /tmp/dpl_invokation_result.json | jq -r '.FunctionError'`
+
 if [ ! -z "${functionerror}" ] && [[ "${functionerror}" != "null" ]]; then
     cat /tmp/dpl_trigger_response.json | jq '.'
     exit 1
 fi
+
 deploymentname=`cat /tmp/dpl_trigger_response.json | jq -r '.uniqueDeploymentName'`
 detailslink=`cat /tmp/dpl_trigger_response.json | jq -r '.detailsLink'`
+
 echo Deployment started with ARN:
 echo ${deploymentname}
 echo .
+
 progressid=0
+
 while true; do
     sleep 5
-        (
+
+    (
 cat <<EOF
 {
     "serviceName": "${PLANERIO_SERVICE_NAME}",
@@ -133,15 +127,19 @@ cat <<EOF
     "previousProgressId": ${progressid}
 }
 EOF
-        ) > /tmp/dpl_poll_request.json
+    ) > /tmp/dpl_poll_request.json
 
     aws lambda invoke \
         --function-name 'planerio-microservice-deployment-pollDeploymentStatus' \
-        --cli-binary-format raw-in-base64-out --payload 'file:///tmp/dpl_poll_request.json' \
+        --payload 'file:///tmp/dpl_poll_request.json' \
+        --cli-binary-format raw-in-base64-out \
         /tmp/dpl_poll_status.json >/dev/null
+
     status=`cat /tmp/dpl_poll_status.json | jq -r '.status'`
     progressid=`cat /tmp/dpl_poll_status.json | jq -r '.maxProgressId'`
+
     cat /tmp/dpl_poll_status.json | jq -r '.progressSteps[]'
+
     if [[ "${status}" != "RUNNING" ]]; then
         break
     fi
@@ -156,5 +154,3 @@ echo .
 if [[ "${status}" != "SUCCEEDED" ]]; then
     exit 255
 fi
-
-
