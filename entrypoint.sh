@@ -29,12 +29,12 @@ if [ -z "${COMMITHASH}" ]; then
     exit 1
 fi
 
-if [ -z "${DOCKERIMAGEHASH}" ] && [ -z "${S3OBJECTVERSION}"] ; then
+if [ -z "${DOCKERIMAGEHASH}" ] && [ -z "${S3OBJECTVERSION}" ] ; then
     echo "Missing both DOCKERIMAGEHASH and S3OBJECTVERSION. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified"
     exit 1
 fi
 
-if [ ! -z "${DOCKERIMAGEHASH}" ] && [ ! -z "${S3OBJECTVERSION}"] ; then
+if [ ! -z "${DOCKERIMAGEHASH}" ] && [ ! -z "${S3OBJECTVERSION}" ] ; then
     echo "Both DOCKERIMAGEHASH and S3OBJECTVERSION are specified. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified, but not both. "
     exit 1
 fi
@@ -78,7 +78,7 @@ EOF
     ) > /tmp/dpl_trigger_request.json
 fi
 
-if [ ! -z "${S3OBJECTVERSION}"] && [ ! -z "${KAFKA_TOPICS_JSON}" ]; then
+if [ ! -z "${S3OBJECTVERSION}" ] && [ ! -z "${KAFKA_TOPICS_JSON}" ]; then
     (
 cat <<EOF
 {
