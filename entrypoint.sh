@@ -44,6 +44,7 @@ UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
 
 echo "variables are cleared and set"
+echo $KAFKA_TOPICS_JSON
 
 
 if [ ! -z "${DOCKERIMAGEHASH}"] ; then
