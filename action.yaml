@@ -17,9 +17,6 @@ inputs:
   COMMITHASH:
     description: 'commithash'
     required: false
-  DOCKERIMAGEHASH:
-    description: 'docker image id'
-    required: false
   S3OBJECTVERSION:
     description: 's3 object version'
     required: false
@@ -37,7 +34,6 @@ runs:
         BUILDNUMBER: ${{ inputs.BUILDNUMBER }}
         BRANCHNAME: ${{ inputs.BRANCHNAME }}
         COMMITHASH: ${{ inputs.COMMITHASH }}
-        DOCKERIMAGEHASH: ${{ inputs.DOCKERIMAGEHASH }}
         S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
         KAFKA_TOPICS_JSON: ${{ inputs.KAFKA_TOPICS_JSON }}
 

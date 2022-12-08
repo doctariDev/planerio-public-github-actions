@@ -29,39 +29,11 @@ if [ -z "${COMMITHASH}" ]; then
     exit 1
 fi
 
-if [ -z "${DOCKERIMAGEHASH}" ] && [ -z "${S3OBJECTVERSION}" ] ; then
-    echo "Missing both DOCKERIMAGEHASH and S3OBJECTVERSION. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified"
-    exit 1
-fi
-
-if [ ! -z "${DOCKERIMAGEHASH}" ] && [ ! -z "${S3OBJECTVERSION}" ] ; then
-    echo "Both DOCKERIMAGEHASH and S3OBJECTVERSION are specified. Either DOCKERIMAGEHASH or S3OBJECTVERSION must be specified, but not both. "
-    exit 1
-fi
-
-
 UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
 
 echo "variables are cleared and set"
 echo $KAFKA_TOPICS_JSON
-
-
-if [ ! -z "${DOCKERIMAGEHASH}"] ; then
-    (
-cat <<EOF
-{
-    "serviceName": "${PLANERIO_SERVICE_NAME}",
-    "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
-    "buildNumber": ${BUILDNUMBER},
-    "branchName": "${BRANCHNAME}",
-    "commitHash": "${COMMITHASH}",
-    "dockerImageHash": "${DOCKERIMAGEHASH}",
-    "uniqueId": "${UNIQUEID}"
-}
-EOF
-    ) > /tmp/dpl_trigger_request.json
-fi
 
 if [ ! -z "${S3OBJECTVERSION}" ] && [ -z "${KAFKA_TOPICS_JSON}" ]; then
     (
@@ -77,9 +49,7 @@ cat <<EOF
 }
 EOF
     ) > /tmp/dpl_trigger_request.json
-fi
-
-if [ ! -z "${S3OBJECTVERSION}" ] && [ ! -z "${KAFKA_TOPICS_JSON}" ]; then
+elif [ ! -z "${S3OBJECTVERSION}" ] && [ ! -z "${KAFKA_TOPICS_JSON}" ]; then
     (
 cat <<EOF
 {
@@ -90,6 +60,19 @@ cat <<EOF
     "commitHash": "${COMMITHASH}",
     "s3ObjectVersion": "${S3OBJECTVERSION}",
     "kafkaTopics": ${KAFKA_TOPICS_JSON},
+    "uniqueId": "${UNIQUEID}"
+}
+EOF
+    ) > /tmp/dpl_trigger_request.json
+else
+    (
+cat <<EOF
+{
+    "serviceName": "${PLANERIO_SERVICE_NAME}",
+    "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
+    "buildNumber": ${BUILDNUMBER},
+    "branchName": "${BRANCHNAME}",
+    "commitHash": "${COMMITHASH}",
     "uniqueId": "${UNIQUEID}"
 }
 EOF
