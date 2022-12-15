@@ -33,7 +33,10 @@ UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
 
 echo "variables are cleared and set"
-echo $KAFKA_TOPICS_JSON
+KAFKA_TOPICS_JSON='[]'
+if [ -f planerio-kafka-consumer.json ]; then
+    KAFKA_TOPICS_JSON=$(jq -r .topicsV1 < planerio-kafka-consumer.json)
+fi
 
 if [ ! -z "${S3OBJECTVERSION}" ] && [ -z "${KAFKA_TOPICS_JSON}" ]; then
     (
