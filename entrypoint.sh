@@ -33,23 +33,12 @@ UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
 
 echo "variables are cleared and set"
-echo $KAFKA_TOPICS_JSON
+KAFKA_TOPICS_JSON='[]'
+if [ -f planerio-kafka-consumer.json ]; then
+    KAFKA_TOPICS_JSON=$(jq -r .topicsV1 < planerio-kafka-consumer.json)
+fi
 
-if [ ! -z "${S3OBJECTVERSION}" ] && [ -z "${KAFKA_TOPICS_JSON}" ]; then
-    (
-cat <<EOF
-{
-    "serviceName": "${PLANERIO_SERVICE_NAME}",
-    "staticEnvironmentName": "${PLANERIO_STATIC_ENVIRONMENT_NAME}",
-    "buildNumber": ${BUILDNUMBER},
-    "branchName": "${BRANCHNAME}",
-    "commitHash": "${COMMITHASH}",
-    "s3ObjectVersion": "${S3OBJECTVERSION}",
-    "uniqueId": "${UNIQUEID}"
-}
-EOF
-    ) > /tmp/dpl_trigger_request.json
-elif [ ! -z "${S3OBJECTVERSION}" ] && [ ! -z "${KAFKA_TOPICS_JSON}" ]; then
+if [ ! -z "${S3OBJECTVERSION}" ]; then
     (
 cat <<EOF
 {
@@ -73,6 +62,7 @@ cat <<EOF
     "buildNumber": ${BUILDNUMBER},
     "branchName": "${BRANCHNAME}",
     "commitHash": "${COMMITHASH}",
+    "kafkaTopics": ${KAFKA_TOPICS_JSON},
     "uniqueId": "${UNIQUEID}"
 }
 EOF
@@ -140,5 +130,3 @@ echo .
 if [[ "${status}" != "SUCCEEDED" ]]; then
     exit 255
 fi
-
-
