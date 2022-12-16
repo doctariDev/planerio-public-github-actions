@@ -35,5 +35,3 @@ runs:
         BRANCHNAME: ${{ inputs.BRANCHNAME }}
         COMMITHASH: ${{ inputs.COMMITHASH }}
         S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
-        KAFKA_TOPICS_JSON: ${{ inputs.KAFKA_TOPICS_JSON }}
-
