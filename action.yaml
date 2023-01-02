@@ -1,6 +1,6 @@
 # action.yaml
-name: 'Trigger Deployment in Planerios AWS ECS'
-description: 'use multiple bash scripts to trigger a deployment and run updates'
+name: 'Run io.planer.service.... deployment'
+description: 'Starts the Step Function that orchestrates the deployment and waits for the result'
 inputs:
   PLANERIO_SERVICE_NAME:
     description: 'Name of the Planerio service you want to deploy'
