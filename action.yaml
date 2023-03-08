@@ -1,12 +1,12 @@
 # action.yaml
-name: 'Trigger Deployment in Planerios AWS ECS'
-description: 'use multiple bash scripts to trigger a deployment and run updates'
+name: 'Run io.planer.service.... deployment'
+description: 'Starts the Step Function that orchestrates the deployment and waits for the result'
 inputs:
   PLANERIO_SERVICE_NAME:
-    description: 'name of the Planerio service you want to deploy'
+    description: 'Name of the Planerio service you want to deploy'
     required: true
   PLANERIO_STATIC_ENVIRONMENT_NAME:
-    description: 'planerio environmnt you want to deploy to e.g.: dev, stage'
+    description: 'Planerio Environment you want to deploy to e.g.: dev, stage'
     required: true
   BUILDNUMBER:
     description: 'number of build'
@@ -18,10 +18,10 @@ inputs:
     description: 'commithash'
     required: false
   S3OBJECTVERSION:
-    description: 's3 object version'
+    description: 'For Lambda services - S3 object version'
     required: false
-  KAFKA_TOPICS_JSON:
-    description: 'kafkaTopics to update'
+  AWS_PROFILE:
+    description: 'Use a specific AWS_PROFILE'
     required: false
 runs:
   using: 'composite'
@@ -35,3 +35,4 @@ runs:
         BRANCHNAME: ${{ inputs.BRANCHNAME }}
         COMMITHASH: ${{ inputs.COMMITHASH }}
         S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
+        AWS_PROFILE: ${{ inputs.AWS_PROFILE }}
