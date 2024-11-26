@@ -30,10 +30,6 @@ if [ -z "${AWS_PROFILE}" ]; then
     unset AWS_PROFILE
 fi
 
-if [ -z "${PARALLEL_DEPLOYMENT}" ]; then
-    unset PARALLEL_DEPLOYMENT
-fi
-
 KAFKA_TOPICS_JSON='[]'
 
 if [ -f planerio-kafka-consumer.json ]; then
