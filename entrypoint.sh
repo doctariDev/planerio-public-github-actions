@@ -28,6 +28,8 @@ fi
 
 if [ -z "${PARALLEL_DEPLOYMENT}" ]; then
     PARALLEL_DEPLOYMENT=false
+else 
+    echo 'PARALLEL_DEPLOYMENT is currrently only working for ECS-based services'
 fi
 
 if [ -z "${AWS_PROFILE}" ]; then
