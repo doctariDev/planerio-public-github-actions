@@ -26,14 +26,15 @@ if [ -z "${COMMITHASH}" ]; then
     exit 1
 fi
 
+if [ -z "${AWS_PROFILE}" ]; then
+    unset AWS_PROFILE
+fi
+
+
 if [ -z "${PARALLEL_DEPLOYMENT}" ]; then
     PARALLEL_DEPLOYMENT=false
 else 
     echo 'PARALLEL_DEPLOYMENT is currrently only working for ECS-based services'
-fi
-
-if [ -z "${AWS_PROFILE}" ]; then
-    unset AWS_PROFILE
 fi
 
 KAFKA_TOPICS_JSON='[]'
