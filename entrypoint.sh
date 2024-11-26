@@ -53,7 +53,7 @@ cat <<EOF
     "s3ObjectVersion": "${S3OBJECTVERSION}",
     "kafkaTopics": ${KAFKA_TOPICS_JSON},
     "uniqueId": "${UNIQUEID}",
-    "parallelDeployment": ${PARALLEL_DEPLOYMENT}
+    "parallelDeployment": "${PARALLEL_DEPLOYMENT}"
 }
 EOF
 ) > /tmp/dpl_trigger_request.json
