@@ -30,6 +30,10 @@ if [ -z "${AWS_PROFILE}" ]; then
     unset AWS_PROFILE
 fi
 
+if [ -z "${PARALLEL_DEPLOYMENT}" ]; then
+    unset PARALLEL_DEPLOYMENT
+fi
+
 KAFKA_TOPICS_JSON='[]'
 
 if [ -f planerio-kafka-consumer.json ]; then
@@ -48,7 +52,8 @@ cat <<EOF
     "commitHash": "${COMMITHASH}",
     "s3ObjectVersion": "${S3OBJECTVERSION}",
     "kafkaTopics": ${KAFKA_TOPICS_JSON},
-    "uniqueId": "${UNIQUEID}"
+    "uniqueId": "${UNIQUEID}",
+    "parallelDeployment": ${PARALLEL_DEPLOYMENT}
 }
 EOF
 ) > /tmp/dpl_trigger_request.json
