@@ -23,6 +23,9 @@ inputs:
   AWS_PROFILE:
     description: 'Use a specific AWS_PROFILE'
     required: false
+  PARALLEL_DEPLOYMENT:
+    description: 'Deploy in parallel'
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -36,3 +39,4 @@ runs:
         COMMITHASH: ${{ inputs.COMMITHASH }}
         S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
         AWS_PROFILE: ${{ inputs.AWS_PROFILE }}
+        PARALLEL_DEPLOYMENT: ${{ inputs.PARALLEL_DEPLOYMENT }}
