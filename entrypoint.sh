@@ -27,7 +27,7 @@ if [ -z "${COMMITHASH}" ]; then
 fi
 
 if [ -z "${PARALLEL_DEPLOYMENT}" ]; then
-    PARALLEL_DEPLOYMENT="false"
+    PARALLEL_DEPLOYMENT=false
 fi
 
 if [ -z "${AWS_PROFILE}" ]; then
@@ -40,7 +40,6 @@ if [ -f planerio-kafka-consumer.json ]; then
     KAFKA_TOPICS_JSON=$(jq -r .topicsV1 < planerio-kafka-consumer.json)
 fi
 
-echo ${PARALLEL_DEPLOYMENT}
 UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
 (
