@@ -40,7 +40,7 @@ if [ -f planerio-kafka-consumer.json ]; then
     KAFKA_TOPICS_JSON=$(jq -r .topicsV1 < planerio-kafka-consumer.json)
 fi
 
-
+echo ${PARALLEL_DEPLOYMENT}
 UNIQUEID=`cat /proc/sys/kernel/random/uuid`
 
 (
