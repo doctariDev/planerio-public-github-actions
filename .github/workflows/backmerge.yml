@@ -77,8 +77,28 @@ jobs:
           github-token: ${{ secrets.IT_DOCTARI_BOT_TOKEN }}
           script: |
             const { repo, owner } = context.repo;
+            // For PR title:
+            const suffix = 'merge ${{ inputs.merge-from-branch }} into ${{ inputs.merge-to-branch }}';
+            // Close any previous auto-merge PRs for the same branches:
+            const open_prs = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              base: '${{ inputs.merge-to-branch }}',
+            });
+            for (const pr of open_prs.data) {
+              if (pr.title.endsWith('] ' + suffix)) {
+                await github.rest.pulls.update({
+                  owner,
+                  repo,
+                  pull_number: pr.number,
+                  state: 'closed',
+                });
+              }
+            }
+            // Create new PR:
             const result = await github.rest.pulls.create({
-              title: '[${{ steps.date.outputs.date }}]${{ steps.grn.outputs.release_number }} merge ${{ inputs.merge-from-branch }} into ${{ inputs.merge-to-branch }}',
+              title: '[${{ steps.date.outputs.date }}]${{ steps.grn.outputs.release_number }} ' + suffix,
               owner,
               repo,
               head: '${{ steps.cb.outputs.branch_name }}',
