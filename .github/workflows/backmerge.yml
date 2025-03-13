@@ -1,0 +1,103 @@
+name: Create Backmerge PR
+
+on:
+  workflow_call:
+    inputs:
+      merge-from-branch:
+        type: string
+        description: The branch to merge FROM (e.g. main when doing main->stage)
+      merge-to-branch:
+        type: string
+        description: The branch to merge INTO (e.g. stage when doing main->stage)
+      approve-pr:
+        type: boolean
+        default: true
+      latest-tag-in-pr-title:
+        type: boolean
+        default: false
+    secrets:
+        IT_DOCTARI_BOT_TOKEN:
+          required: true
+
+jobs:
+  create-backmerge-pr:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the repository
+      - name: Checkout out Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set git config
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+
+      # Retrieve the last release number
+      - name: Get release number
+        if: inputs.latest-tag-in-pr-title
+        id: grn
+        run: |
+          RELEASE_NUMBER=$(git tag | grep "^v[0-9]" | sort -V | tail -n 1)
+          echo "release_number=[$RELEASE_NUMBER]" >> $GITHUB_OUTPUT
+
+      # Set current date
+      - name: Get date
+        id: date
+        run: |
+          echo "date="$(date +'%Y-%m-%d') >> $GITHUB_OUTPUT
+
+      # Create a new branch
+      - name: Create branch
+        id: cb
+        run: |
+          BRANCH_NAME=mergeback/${{ inputs.merge-from-branch }}-${{ github.run_number }}
+          git checkout -b $BRANCH_NAME "origin/${{ inputs.merge-to-branch }}"
+          if ! git merge --ff --no-edit "origin/${{ inputs.merge-from-branch }}"; then
+            git merge --abort || true
+            # allow conflicts to be resolved from GitHub UI:
+            git reset --hard "origin/${{ inputs.merge-from-branch }}"
+          fi
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "has_changes="$(git diff --exit-code --quiet $BRANCH_NAME "origin/${{ inputs.merge-to-branch }}"; echo $?) >> $GITHUB_OUTPUT
+
+      # Push the new branch to the remote repository
+      - name: Push new branch
+        if: steps.cb.outputs.has_changes != '0'
+        run: |
+          git push --quiet origin :${{ steps.cb.outputs.branch_name }} || true
+          git push --quiet --set-upstream origin ${{ steps.cb.outputs.branch_name }}
+
+      - name: Create Pull Request (as doctari-it user)
+        if: steps.cb.outputs.has_changes != '0'
+        id: cpr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.IT_DOCTARI_BOT_TOKEN }}
+          script: |
+            const { repo, owner } = context.repo;
+            const result = await github.rest.pulls.create({
+              title: '[${{ steps.date.outputs.date }}]${{ steps.grn.outputs.release_number }} merge ${{ inputs.merge-from-branch }} into ${{ inputs.merge-to-branch }}',
+              owner,
+              repo,
+              head: '${{ steps.cb.outputs.branch_name }}',
+              base: '${{ inputs.merge-to-branch }}',
+              body: 'This is an automatically created backmerge PR.',
+            });
+            return result.data.number;
+          result-encoding: string
+
+      - name: Approve Pull Request (as github-actions user)
+        if: steps.cb.outputs.has_changes != '0' && inputs.approve-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review --approve '${{ steps.cpr.outputs.result }}'
+
+      - name: Enable Auto-Merge (as github-actions user)
+        if: steps.cb.outputs.has_changes != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --auto --merge '${{ steps.cpr.outputs.result }}' || true
