@@ -12,9 +12,11 @@ on:
       approve-pr:
         type: boolean
         default: true
+        description: Whether the "github-actions" user should approve the PR
       latest-tag-in-pr-title:
         type: boolean
         default: false
+        description: Whether the latest version tag (beginning with "v", followed by a digit) should be included in the PR title
     secrets:
         IT_DOCTARI_BOT_TOKEN:
           required: true
@@ -40,6 +42,10 @@ jobs:
         id: grn
         run: |
           RELEASE_NUMBER=$(git tag | grep "^v[0-9]" | sort -V | tail -n 1)
+          if [ -z "$RELEASE_NUMBER" ]; then
+            echo "ERROR: No release tags found, but tag was requested in PR title"
+            exit 1
+          fi
           echo "release_number=[$RELEASE_NUMBER]" >> $GITHUB_OUTPUT
 
       # Set current date
