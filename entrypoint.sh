@@ -31,8 +31,7 @@ if [ -z "${AWS_PROFILE}" ]; then
 fi
 
 if [ -z "${WAIT_TILL_DEPLOYMENT_READY}" ]; then
-    echo "Missing WAIT_TILL_DEPLOYMENT_READY from environment - should be configured in yaml file"
-    exit 1
+    WAIT_TILL_DEPLOYMENT_READY=false
 fi
 
 if [ -z "${PARALLEL_DEPLOYMENT}" ]; then
