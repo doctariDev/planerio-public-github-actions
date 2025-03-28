@@ -30,6 +30,9 @@ if [ -z "${AWS_PROFILE}" ]; then
     unset AWS_PROFILE
 fi
 
+if [ -z "${WAIT_TILL_DEPLOYMENT_READY}" ]; then
+    WAIT_TILL_DEPLOYMENT_READY=false
+fi
 
 if [ -z "${PARALLEL_DEPLOYMENT}" ]; then
     PARALLEL_DEPLOYMENT=false
@@ -56,7 +59,8 @@ cat <<EOF
     "s3ObjectVersion": "${S3OBJECTVERSION}",
     "kafkaTopics": ${KAFKA_TOPICS_JSON},
     "uniqueId": "${UNIQUEID}",
-    "parallelDeployment": ${PARALLEL_DEPLOYMENT}
+    "parallelDeployment": ${PARALLEL_DEPLOYMENT},
+    "waitTillServiceReady": ${WAIT_TILL_DEPLOYMENT_READY}
 }
 EOF
 ) > /tmp/dpl_trigger_request.json
