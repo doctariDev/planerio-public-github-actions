@@ -26,6 +26,10 @@ inputs:
   PARALLEL_DEPLOYMENT:
     description: 'Deploy in parallel'
     required: false
+  WAIT_TILL_DEPLOYMENT_READY:
+    description: 'Wait till the instances are ready after deployment'
+    required: false
+    
 runs:
   using: 'composite'
   steps:
@@ -40,3 +44,4 @@ runs:
         S3OBJECTVERSION: ${{ inputs.S3OBJECTVERSION }}
         AWS_PROFILE: ${{ inputs.AWS_PROFILE }}
         PARALLEL_DEPLOYMENT: ${{ inputs.PARALLEL_DEPLOYMENT }}
+        WAIT_TILL_DEPLOYMENT_READY: ${{inputs.WAIT_TILL_DEPLOYMENT_READY}}
