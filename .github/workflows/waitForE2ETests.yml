@@ -11,6 +11,10 @@ on:
             test-type:
                 type: string
                 default: cypress
+            branch:
+                type: string
+            repo:
+                type: string
 
 jobs:
     wait-for-e2e-test-status:
@@ -28,17 +32,25 @@ jobs:
                   role-session-name: GitHub_to_AWS_via_Federated_Metrics_OIDC
                   aws-region: eu-central-1
 
+            - name: Set test status payload
+              run: |
+                  if [[ -n "${{ inputs.branch }}" && -n "${{ inputs.repo }}" ]]; then
+                    echo "TEST_STATUS_PAYLOAD=$(jq -n --arg type 'test_status' --arg branch_name '${{ inputs.branch }}' --arg repo '${{ inputs.repo }}' --arg environment '${{ inputs.environment || '' }}' '{type: $type, branch_name: $branch_name, repo: $repo, environment: $environment}')" >> $GITHUB_ENV
+                  else
+                    echo "TEST_STATUS_PAYLOAD=$(jq -n --arg type 'test_status' --arg sha '${{ github.sha }}' --arg test_type '${{ inputs.test-type }}' --arg environment '${{ inputs.environment || '' }}' '{type: $type, sha: $sha, test_type: $test_type, environment: $environment}')" >> $GITHUB_ENV
+                  fi
+
             - name: Invoke the lambda and wait until it does not return pending
               timeout-minutes: ${{ inputs.wait-timeout }}
               run: |
-                  until [[ $(aws lambda invoke --function-name cdkmetrics --cli-binary-format raw-in-base64-out --payload '{"type": "test_status", "sha": "${{ github.sha }}", "test_type": "${{ inputs.test-type }}"${{ inputs.environment && format(', "environment": "{0}"', inputs.environment) || '' }}}' /dev/stdout 2>/dev/null --no-cli-pager | jq -r '.status | select( . != null )') != "pending" ]]; do
+                  until [[ $(aws lambda invoke --function-name cdkmetrics --cli-binary-format raw-in-base64-out --payload '${{ env.TEST_STATUS_PAYLOAD }}' /dev/stdout 2>/dev/null --no-cli-pager | jq -r '.status | select( . != null )') != "pending" ]]; do
                     echo "Waiting for ${{ inputs.test-type }} tests results for ${{ github.sha }}..."
                     sleep 5
                   done
 
             - name: Check the status of the ${{ inputs.test-type }} tests and fail the workflow if tests failed
               run: |
-                  status=$(aws lambda invoke --function-name cdkmetrics --cli-binary-format raw-in-base64-out --payload '{"type": "test_status", "sha": "${{ github.sha }}", "test_type": "${{ inputs.test-type }}"${{ inputs.environment && format(', "environment": "{0}"', inputs.environment) || '' }}}' /dev/stdout 2>/dev/null --no-cli-pager | jq -r '.status | select( . != null )')
+                  status=$(aws lambda invoke --function-name cdkmetrics --cli-binary-format raw-in-base64-out --payload '${{ env.TEST_STATUS_PAYLOAD }}' /dev/stdout 2>/dev/null --no-cli-pager | jq -r '.status | select( . != null )')
                   echo "The status of the ${{ inputs.test-type }} tests is $status"
 
                   # post the link to the test run to the summary
