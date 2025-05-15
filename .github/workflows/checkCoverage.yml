@@ -1,0 +1,41 @@
+name: Test Coverage Validator
+description: Validates test coverage against a target threshold
+
+on:
+    workflow_call:
+        inputs:
+            fail-under:
+                description: "Target coverage percentage (0-100)"
+                type: number
+                required: true
+            coverage-path:
+                description: "Path to coverage reports (uses common defaults if not specified)"
+                required: false
+                type: string
+                default: "coverage/clover.xml"
+            compare-branch:
+                description: "Branch to compare coverage against"
+                required: false
+                type: string
+                default: "main"
+jobs:
+    check-coverage:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+              with:
+                fetch-depth: 0
+
+            - name: Setup Python
+              uses: actions/setup-python@v4
+              with:
+                python-version: '3.x'
+
+            - name: Install diff-cover
+              run: pip install diff-cover
+
+            - name: Check coverage
+              run: |
+                diff-cover ${{ inputs.coverage-path }} --compare-branch=${{ inputs.compare-branch }} --fail-under=${{ inputs.fail-under }}
