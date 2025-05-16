@@ -65,6 +65,12 @@ jobs:
             - name: debug pwd
               run: pwd
 
+            - name: Replace path in the xml
+              run: |
+                  # replace #CURRENT_DIR# in path in the xml file with CURRENT_DIR
+                  CURRENT_DIR=$(pwd)
+                  sed -i "s|#CURRENT_DIR#|$CURRENT_DIR|g" ${{ inputs.coverage-path }}
+
             - name: Check coverage
               run: |
                   diff-cover ${{ inputs.coverage-path }} --compare-branch=origin/${{ inputs.compare-branch }} --fail-under=${{ inputs.fail-under }}
