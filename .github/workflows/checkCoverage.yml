@@ -57,14 +57,11 @@ jobs:
             - name: Install diff-cover
               run: pip install diff-cover
 
-            # - name: Debug checkout 1
-            #   run: |
-            #       git checkout ${{ inputs.compare-branch }}
-
-            # - name: Debug checkout 2 (original branch)
-            #   run: |
-            #       git checkout ${{ github.ref_name }}
+            - name: Fetch base branch for comparison
+              run: |
+                  git fetch origin ${{ github.event.pull_request.base.ref }}
+                  git checkout ${{ github.event.pull_request.head.sha }}
 
             - name: Check coverage
               run: |
-                  diff-cover ${{ inputs.coverage-path }} --compare-branch=${{ inputs.compare-branch }} --fail-under=${{ inputs.fail-under }}
+                  diff-cover ${{ inputs.coverage-path }} --compare-branch=origin/${{ inputs.compare-branch }} --fail-under=${{ inputs.fail-under }}
