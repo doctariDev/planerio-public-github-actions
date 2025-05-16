@@ -27,12 +27,6 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
-              with:
-                  fetch-depth: 0 # Fetch all history so that diff-cover can compare branches
-
-            - name: Fetch comparison branch
-              run: git fetch origin ${{ inputs.compare-branch }}:refs/remotes/origin/${{ inputs.compare-branch }}
-              continue-on-error: true
 
             - name: Download coverage artifact
               uses: actions/download-artifact@v4
