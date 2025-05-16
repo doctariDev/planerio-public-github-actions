@@ -44,15 +44,10 @@ jobs:
                   name: ${{ inputs.artifact-name }}
                   path: ./coverage-download
 
-            - name: debug 1
-              run: ls -la ./coverage-download
-
             - name: Extract coverage artifact
               run: |
                   mkdir -p $(dirname ${{ inputs.coverage-path }})
                   cp -r ./coverage-download/* $(dirname ${{ inputs.coverage-path }})/
-                  # debug
-                  ls -la ${{ inputs.coverage-path }}
 
             - name: Setup Python
               uses: actions/setup-python@v4
@@ -61,6 +56,14 @@ jobs:
 
             - name: Install diff-cover
               run: pip install diff-cover
+
+            - name: Debug checkout 1
+              run: |
+                  git checkout ${{ inputs.compare-branch }}
+
+            - name: Debug checkout 2
+              run: |
+                  git checkout ${{ github.sha }}
 
             - name: Check coverage
               run: |
