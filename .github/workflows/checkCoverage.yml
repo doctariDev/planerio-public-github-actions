@@ -62,6 +62,9 @@ jobs:
                   git fetch origin ${{ github.event.pull_request.base.ref }}
                   git checkout ${{ github.event.pull_request.head.sha }}
 
+            - name: debug pwd
+              run: pwd
+
             - name: Check coverage
               run: |
                   diff-cover ${{ inputs.coverage-path }} --compare-branch=origin/${{ inputs.compare-branch }} --fail-under=${{ inputs.fail-under }}
