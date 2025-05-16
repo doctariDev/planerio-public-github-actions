@@ -18,6 +18,11 @@ on:
                 required: false
                 type: string
                 default: "main"
+            artifact-name:
+                description: "Name of the artifact containing coverage reports"
+                required: false
+                type: string
+                default: "coverage"
 jobs:
     check-coverage:
         runs-on: ubuntu-latest
@@ -26,16 +31,27 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v3
               with:
-                fetch-depth: 0
+                  fetch-depth: 0
+
+            - name: Download coverage artifact
+              uses: actions/download-artifact@v3
+              with:
+                  name: ${{ inputs.artifact-name }}
+                  path: ./coverage-download
+
+            - name: Extract coverage artifact
+              run: |
+                  mkdir -p $(dirname ${{ inputs.coverage-path }})
+                  cp -r ./coverage-download/* $(dirname ${{ inputs.coverage-path }})/
 
             - name: Setup Python
               uses: actions/setup-python@v4
               with:
-                python-version: '3.x'
+                  python-version: "3.x"
 
             - name: Install diff-cover
               run: pip install diff-cover
 
             - name: Check coverage
               run: |
-                diff-cover ${{ inputs.coverage-path }} --compare-branch=${{ inputs.compare-branch }} --fail-under=${{ inputs.fail-under }}
+                  diff-cover ${{ inputs.coverage-path }} --compare-branch=${{ inputs.compare-branch }} --fail-under=${{ inputs.fail-under }}
