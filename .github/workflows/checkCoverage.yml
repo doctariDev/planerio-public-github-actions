@@ -8,6 +8,7 @@ on:
                 description: "Target coverage percentage (0-100)"
                 type: number
                 required: true
+                default: 80
             coverage-path:
                 description: "Path to coverage reports (uses common defaults if not specified)"
                 required: false
@@ -17,12 +18,12 @@ on:
                 description: "Branch to compare coverage against"
                 required: false
                 type: string
-                default: "main"
+                default: ${{ github.event.pull_request.base.ref }}
             artifact-name:
                 description: "Name of the artifact containing coverage reports"
                 required: false
                 type: string
-                default: "coverage"
+                default: "coverage-xml"
 jobs:
     check-coverage:
         runs-on: ubuntu-latest
@@ -33,7 +34,6 @@ jobs:
               with:
                   fetch-depth: 0 # Fetch all history so that diff-cover can compare branches
 
-            # Explicitly fetch the comparison branch if it's not already fetched
             - name: Fetch comparison branch
               run: git fetch origin ${{ inputs.compare-branch }}:refs/remotes/origin/${{ inputs.compare-branch }}
               continue-on-error: true
@@ -61,9 +61,6 @@ jobs:
               run: |
                   git fetch origin ${{ github.event.pull_request.base.ref }}
                   git checkout ${{ github.event.pull_request.head.sha }}
-
-            - name: debug pwd
-              run: pwd
 
             - name: Replace path in the xml
               run: |
