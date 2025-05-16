@@ -57,13 +57,13 @@ jobs:
             - name: Install diff-cover
               run: pip install diff-cover
 
-            - name: Debug checkout 1
-              run: |
-                  git checkout ${{ inputs.compare-branch }}
+            # - name: Debug checkout 1
+            #   run: |
+            #       git checkout ${{ inputs.compare-branch }}
 
-            - name: Debug checkout 2 (original branch)
-              run: |
-                  git checkout ${{ github.ref_name }}
+            # - name: Debug checkout 2 (original branch)
+            #   run: |
+            #       git checkout ${{ github.ref_name }}
 
             - name: Check coverage
               run: |
