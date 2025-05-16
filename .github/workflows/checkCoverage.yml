@@ -7,21 +7,17 @@ on:
             fail-under:
                 description: "Target coverage percentage (0-100)"
                 type: number
-                required: true
                 default: 80
             coverage-path:
                 description: "Path to coverage reports (uses common defaults if not specified)"
-                required: false
                 type: string
                 default: "coverage/clover.xml"
             compare-branch:
                 description: "Branch to compare coverage against"
-                required: false
                 type: string
                 default: ${{ github.event.pull_request.base.ref }}
             artifact-name:
                 description: "Name of the artifact containing coverage reports"
-                required: false
                 type: string
                 default: "coverage-xml"
 jobs:
