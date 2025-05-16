@@ -30,11 +30,6 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
-              with:
-                  fetch-depth: 0
-
-            - name: Fetch comparison branch
-              run: git fetch origin ${{ inputs.compare-branch }}
 
             - name: Download coverage artifact
               uses: actions/download-artifact@v4
