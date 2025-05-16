@@ -61,9 +61,9 @@ jobs:
               run: |
                   git checkout ${{ inputs.compare-branch }}
 
-            - name: Debug checkout 2
+            - name: Debug checkout 2 (original branch)
               run: |
-                  git checkout ${{ github.sha }}
+                  git checkout ${{ github.ref_name }}
 
             - name: Check coverage
               run: |
