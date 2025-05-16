@@ -39,10 +39,15 @@ jobs:
                   name: ${{ inputs.artifact-name }}
                   path: ./coverage-download
 
+            - name: debug 1
+              run: ls -la ./coverage-download
+
             - name: Extract coverage artifact
               run: |
                   mkdir -p $(dirname ${{ inputs.coverage-path }})
                   cp -r ./coverage-download/* $(dirname ${{ inputs.coverage-path }})/
+                  # debug
+                  ls -la ${{ inputs.coverage-path }}
 
             - name: Setup Python
               uses: actions/setup-python@v4
