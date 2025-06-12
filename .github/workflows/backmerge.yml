@@ -17,6 +17,10 @@ on:
         type: boolean
         default: false
         description: Whether the latest version tag (beginning with "v", followed by a digit) should be included in the PR title
+      create-pr-if-behind:
+        type: boolean
+        default: false
+        description: Whether to create a PR if merge-to-branch is behind merge-from-branch, even without file differences
     secrets:
         IT_DOCTARI_BOT_TOKEN:
           required: true
@@ -67,16 +71,20 @@ jobs:
           fi
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "has_changes="$(git diff --exit-code --quiet $BRANCH_NAME "origin/${{ inputs.merge-to-branch }}"; echo $?) >> $GITHUB_OUTPUT
+          
+          # Check if merge-to-branch is behind merge-from-branch (has missing commits)
+          COMMITS_BEHIND=$(git rev-list --count "origin/${{ inputs.merge-to-branch }}..origin/${{ inputs.merge-from-branch }}")
+          echo "commits_behind=$COMMITS_BEHIND" >> $GITHUB_OUTPUT
 
       # Push the new branch to the remote repository
       - name: Push new branch
-        if: steps.cb.outputs.has_changes != '0'
+        if: steps.cb.outputs.has_changes != '0' || (inputs.create-pr-if-behind && steps.cb.outputs.commits_behind != '0')
         run: |
           git push --quiet origin :${{ steps.cb.outputs.branch_name }} || true
           git push --quiet --set-upstream origin ${{ steps.cb.outputs.branch_name }}
 
       - name: Create Pull Request (as doctari-it user)
-        if: steps.cb.outputs.has_changes != '0'
+        if: steps.cb.outputs.has_changes != '0' || (inputs.create-pr-if-behind && steps.cb.outputs.commits_behind != '0')
         id: cpr
         uses: actions/github-script@v7
         with:
@@ -115,14 +123,14 @@ jobs:
           result-encoding: string
 
       - name: Approve Pull Request (as github-actions user)
-        if: steps.cb.outputs.has_changes != '0' && inputs.approve-pr
+        if: (steps.cb.outputs.has_changes != '0' || (inputs.create-pr-if-behind && steps.cb.outputs.commits_behind != '0')) && inputs.approve-pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr review --approve '${{ steps.cpr.outputs.result }}'
 
       - name: Enable Auto-Merge (as github-actions user)
-        if: steps.cb.outputs.has_changes != '0'
+        if: steps.cb.outputs.has_changes != '0' || (inputs.create-pr-if-behind && steps.cb.outputs.commits_behind != '0')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
