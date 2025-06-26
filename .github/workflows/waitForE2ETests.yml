@@ -36,10 +36,10 @@ jobs:
               run: |
                   if [[ -n "${{ inputs.branch }}" && -n "${{ inputs.repo }}" ]]; then
                     echo "TEST_STATUS_PAYLOAD=$(jq -n -c --arg type 'test_status' --arg branch_name '${{ inputs.branch }}' --arg repo '${{ inputs.repo }}' --arg environment '${{ inputs.environment || '' }}' '{type: $type, branch_name: $branch_name, repo: $repo, environment: $environment}')" >> $GITHUB_ENV
-                    echo "WAITING_MESSAGE=Waiting for ${{ inputs.test-type }} tests results for branch ${{ inputs.branch }} in repo ${{ inputs.repo }}..." >> $GITHUB_ENV
+                    echo "WAITING_MESSAGE=Waiting for ${{ inputs.test-type }} test results for branch ${{ inputs.branch }} in repo ${{ inputs.repo }}..." >> $GITHUB_ENV
                   else
                     echo "TEST_STATUS_PAYLOAD=$(jq -n -c --arg type 'test_status' --arg sha '${{ github.sha }}' --arg test_type '${{ inputs.test-type }}' --arg environment '${{ inputs.environment || '' }}' '{type: $type, sha: $sha, test_type: $test_type, environment: $environment}')" >> $GITHUB_ENV
-                    echo "WAITING_MESSAGE=Waiting for ${{ inputs.test-type }} tests results for ${{ github.sha }}..." >> $GITHUB_ENV
+                    echo "WAITING_MESSAGE=Waiting for ${{ inputs.test-type }} test results for ${{ github.sha }}..." >> $GITHUB_ENV
                   fi
 
             - name: Invoke the lambda and wait until it does not return pending
